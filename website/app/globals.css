@@ -46,6 +46,22 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-pp-bg: var(--pp-bg);
+  --color-pp-bg-2: var(--pp-bg-2);
+  --color-pp-surface: var(--pp-surface);
+  --color-pp-surface-2: var(--pp-surface-2);
+  --color-pp-border: var(--pp-border);
+  --color-pp-ink: var(--pp-ink);
+  --color-pp-muted: var(--pp-muted);
+  --color-pp-muted-2: var(--pp-muted-2);
+  --color-pp-accent: var(--pp-accent);
+  --color-pp-ok: var(--pp-ok);
+  --color-pp-paper: var(--pp-paper);
+  --color-pp-paper-border: var(--pp-paper-border);
+  --color-pp-paper-ink: var(--pp-paper-ink);
+  --color-pp-paper-muted: var(--pp-paper-muted);
+  --font-pp-mono: var(--pp-mono);
+  --font-pp-serif: var(--pp-serif);
 }
 
 :root {
@@ -81,6 +97,23 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --pp-bg: #07090f;
+  --pp-bg-2: #0d1b2e;
+  --pp-surface: #141b23;
+  --pp-surface-2: #1b232d;
+  --pp-border: #262f3a;
+  --pp-ink: #e7e9ed;
+  --pp-muted: #8b93a3;
+  --pp-muted-2: #4d5665;
+  --pp-accent: #67e8f9;
+  --pp-accent-glow: rgba(103, 232, 249, 0.5);
+  --pp-ok: #6ee7a0;
+  --pp-paper: #ffffff;
+  --pp-paper-border: #e5e2da;
+  --pp-paper-ink: #2b2520;
+  --pp-paper-muted: #6b6154;
+  --pp-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --pp-serif: Georgia, serif;
 }
 
 .dark {
