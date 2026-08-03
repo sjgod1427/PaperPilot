@@ -49,7 +49,7 @@ export function Hero() {
           </em>
         </h1>
         <p className="mb-[30px] max-w-[54ch] text-lg text-pp-muted">
-          PaperPilot reads your code, data, and notes, resolves the venue&rsquo;s real formatting
+          PaperPilot reads your code, data, and notes, resolves the venue's real formatting
           rules, drafts and compiles a LaTeX paper, then checks it for hallucinated claims.{" "}
           <strong className="text-pp-ink">Runs entirely on your machine</strong> — nothing is
           ever uploaded.
@@ -147,7 +147,7 @@ export function Hero() {
               <p>
                 We study a simple mechanism for addressing this waste. At each layer of an
                 already-trained classifier, we compute the softmax confidence of the current
-                layer&rsquo;s prediction. Once this confidence exceeds a fixed threshold τ,
+                layer's prediction. Once this confidence exceeds a fixed threshold τ,
                 inference stops immediately and the current prediction is returned{" "}
                 <span className={styles.cite}>[2]</span>.
               </p>
