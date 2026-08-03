@@ -1,0 +1,149 @@
+/* Hero background layers */
+.hero {
+  background:
+    radial-gradient(circle at 30% 20%, var(--pp-bg-2) 0%, var(--pp-bg) 45%),
+    var(--pp-bg);
+}
+
+.gridBg {
+  background-image: linear-gradient(to right, rgba(103, 232, 249, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(103, 232, 249, 0.09) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.glowWash {
+  background: radial-gradient(circle at 22% 18%, rgba(34, 211, 238, 0.22), transparent 32%),
+    radial-gradient(circle at 82% 78%, rgba(168, 85, 247, 0.16), transparent 30%);
+}
+
+/* Ambient stars */
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Traveling light streaks */
+.streakH {
+  position: absolute;
+  height: 1px;
+  width: 110px;
+  background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.9), transparent);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.7);
+  animation: shootH 3.2s linear infinite;
+}
+
+.streakV {
+  position: absolute;
+  width: 1px;
+  height: 110px;
+  background: linear-gradient(180deg, transparent, rgba(103, 232, 249, 0.9), transparent);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.7);
+  animation: shootV 3.6s linear infinite;
+}
+
+@keyframes shootH {
+  0% {
+    transform: translateX(-140px);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 140px));
+    opacity: 0;
+  }
+}
+
+@keyframes shootV {
+  0% {
+    transform: translateY(-140px);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(100vh + 140px));
+    opacity: 0;
+  }
+}
+
+/* Terminal panel (translucent, blurred) */
+.term {
+  background: rgba(20, 27, 35, 0.62);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.08);
+}
+
+/* Blinking terminal cursor */
+.cursor {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: #d9a544;
+  vertical-align: -2px;
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Paper preview panel */
+.paper {
+  box-shadow: 0 0 50px rgba(34, 211, 238, 0.15), 0 20px 40px -24px rgba(0, 0, 0, 0.6);
+}
+
+/* Two-column academic body text */
+.cols {
+  column-count: 2;
+  column-gap: 16px;
+  font-size: 8.6px;
+  line-height: 1.48;
+  text-align: justify;
+  color: #332c24;
+  flex: 1;
+}
+
+.cols p {
+  margin: 0 0 8px;
+  text-indent: 10px;
+}
+
+.cite {
+  color: #8a7f6c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star,
+  .streakH,
+  .streakV,
+  .cursor {
+    animation: none;
+  }
+}
