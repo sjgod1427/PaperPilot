@@ -56,7 +56,7 @@ export function Hero() {
         </p>
         <div className="mb-[50px] flex gap-3.5">
           <a
-            href="#"
+            href="https://github.com/sjgod1427/PaperPilot/releases/latest/download/PaperPilot.exe"
             className="inline-flex items-center rounded-md bg-[#d9a544] px-[22px] py-[13px] font-pp-mono text-sm font-semibold text-[#1c1508]"
           >
             Download PaperPilot.exe
