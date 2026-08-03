@@ -1,0 +1,154 @@
+\documentclass[sigconf]{acmart}
+
+\usepackage{microtype} % Reduces overfull/underfull boxes via font protrusion/expansion
+\usepackage{booktabs} % For formal tables
+
+\emergencystretch=2em % Allows a bit of extra interword stretch to avoid overfull lines
+\raggedbottom % Lets columns end short instead of being force-stretched to fill the page
+
+\setcopyright{acmcopyright}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{10.1145/nnnnnnn.nnnnnnn}
+\acmConference[Conf'26]{ACM Conference}{Month Day--Day, 2026}{City, Country}
+\acmISBN{978-x-xxxx-xxxx-x/26/06}
+
+\begin{document}
+
+\title{On-Device Personalization for Recommendation Models Without Server Round-Trips}
+
+\author{First Author}
+\orcid{0000-0000-0000-0001}
+\affiliation{%
+  \institution{Institution Name}
+  \city{City}
+  \country{Country}}
+\email{first.author@example.com}
+
+\author{Second Author}
+\orcid{0000-0000-0000-0002}
+\affiliation{%
+  \institution{Institution Name}
+  \city{City}
+  \country{Country}}
+\email{second.author@example.com}
+
+\author{Third Author}
+\affiliation{%
+  \institution{Institution Name}
+  \city{City}
+  \country{Country}}
+\email{third.author@example.com}
+
+\renewcommand{\shortauthors}{First Author et al.}
+
+\begin{abstract}
+Server-side recommendation models are usually personalized by retraining on aggregated interaction logs, which introduces a delay between a user's most recent actions and any change in what they are shown. We present a lightweight on-device adapter that reranks a fixed candidate list using only the user's local interaction history, requiring no additional server round-trip and no retraining of the base model. Across two public recommendation benchmarks, the adapter improves top-10 recommendation accuracy over the unpersonalized base model while adding under 5ms of on-device latency per request.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10010147.10010257</concept_id>
+<concept_desc>Computing methodologies~Machine learning</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010147.10010178</concept_id>
+<concept_desc>Computing methodologies~Artificial intelligence</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+<concept>
+<concept_id>10002951.10003227</concept_id>
+<concept_desc>Information systems~Information systems applications</concept_desc>
+<concept_significance>100</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+\ccsdesc[500]{Computing methodologies~Machine learning}
+\ccsdesc[300]{Computing methodologies~Artificial intelligence}
+\ccsdesc[100]{Information systems~Information systems applications}
+
+\keywords{recommender systems, on-device personalization, reranking, edge inference}
+
+\maketitle
+
+\section{Introduction}
+Recommendation models deployed at scale are typically personalized on the server: interaction logs are aggregated, the model is periodically retrained or fine-tuned, and the updated model is redeployed. This pipeline can take hours to days to reflect a user's most recent behavior, during which the user continues to see recommendations based on a stale profile.
+
+We ask whether a small amount of personalization can happen entirely on-device, between server model updates, using only signals already available locally. Our approach does not modify the server model at all; instead, it reranks the top-$k$ candidates the server already returned, using a lightweight adapter trained once and shipped to the device. The adapter conditions on the user's local interaction history since the last server update, so personalization reflects behavior from the last few minutes, not the last retraining cycle.
+
+Our contributions are: (1) an on-device reranking adapter that requires no server round-trip and no access to other users' data, (2) a training procedure that keeps the adapter small enough to run on mobile hardware within a few milliseconds, and (3) an evaluation on two public benchmarks showing accuracy gains over the unpersonalized base ranking at negligible added latency.
+
+\section{Related Work}
+Federated and on-device learning approaches have explored training personalized models locally, but most require periodic communication with a server to aggregate updates, which reintroduces the same staleness the base pipeline already has. Reranking-based personalization, in contrast, has mostly been studied as a server-side technique applied immediately after retrieval, rather than as something that can run entirely on the client. Our work sits between these two lines: like on-device learning, it needs no server access at inference time; like server-side reranking, it operates purely as a lightweight second pass over an existing candidate list rather than training a new model from scratch.
+
+\section{Proposed Method}
+\subsection{Overview}
+The server-side model returns an unpersonalized top-$k$ candidate list for each request, exactly as it does today. The on-device adapter takes this list along with the user's local interaction history and produces a personalized reordering. The adapter itself is a small model shipped to the device once and updated only occasionally, decoupling personalization latency from model update latency entirely.
+
+\subsection{Formulation}
+Given a candidate list of items $c_1, \dots, c_k$ with server-assigned scores $s_1, \dots, s_k$, and a local interaction history $H$, the adapter computes a personalized score
+\begin{equation}
+\hat{s}_i = s_i + \lambda \cdot g(c_i, H)
+\label{eq:rerank}
+\end{equation}
+where $g(c_i, H)$ is a lightweight compatibility score between candidate $c_i$ and the local history, and $\lambda$ controls how much local personalization is allowed to shift the server's ranking. The final recommendation order is simply the candidates sorted by $\hat{s}_i$ descending.
+
+\subsection{On-Device Compatibility Scoring}
+$g(c_i, H)$ is computed from a fixed-size embedding of $H$, updated incrementally as new interactions occur, so scoring a candidate against the current history is a single dot product rather than a scan over raw history. This keeps per-request adapter cost independent of how long the user's interaction history has grown.
+
+Figure~\ref{fig:scores} shows the distribution of compatibility scores across a sample of candidates before and after reranking; the adapter shifts the overall distribution upward and separates it more clearly from zero, consistent with it consistently promoting candidates that better match the local history rather than only reordering within a narrow band of scores.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{fig3.png}
+\caption{Distribution of candidate compatibility scores before and after on-device reranking.}
+\label{fig:scores}
+\end{figure}
+
+\section{Experiments}
+\subsection{Setup}
+We evaluate on two public recommendation benchmarks, comparing the unpersonalized base ranking against the same ranking passed through our on-device adapter. We measure top-10 recommendation accuracy (Hit@10) and the added per-request latency measured on a mid-range mobile CPU.
+
+\begin{table}
+\caption{Comparison of Methods}
+\label{tab:results}
+\begin{tabular}{lcc}
+\toprule
+Method & Hit@10 & Added Latency \\
+\midrule
+Base ranking (server only) & 0.312 & --- \\
++ On-device adapter (ours) & 0.354 & 4.6\,ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{fig1.png}
+\caption{Hit@10 improvement over the base ranking as a function of local interaction history length.}
+\label{fig:results}
+\end{figure}
+
+\subsection{Results}
+Table~\ref{tab:results} shows the on-device adapter improves Hit@10 by 4.2 points over the base ranking, at an added latency of 4.6ms per request, well within typical mobile rendering budgets. Figure~\ref{fig:results} shows the improvement grows with the amount of local history available, and is smallest for new users with little on-device signal to condition on, as expected.
+
+Figure~\ref{fig:latency} isolates the added latency itself: the base ranking has no on-device reranking step by definition, while the adapter adds a small, consistent cost per request regardless of candidate list size.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{fig2.png}
+\caption{Added per-request latency of the on-device adapter compared to the base ranking (no reranking step).}
+\label{fig:latency}
+\end{figure}
+
+\section{Conclusion}
+We presented an on-device reranking adapter that personalizes recommendations between server model updates without any additional server round-trip. Because the adapter only reorders candidates the server already returned, it composes with any existing server-side ranking model without requiring changes to it. Future work includes extending the compatibility scoring to multi-modal item representations and studying privacy guarantees of the on-device history embedding.
+
+\begin{thebibliography}{1}
+\bibitem{ref1} G. Eason, B. Noble, and I. N. Sneddon. 1955. On certain integrals of Lipschitz-Hankel type involving products of Bessel functions. \textit{Phil. Trans. Roy. Soc. London} A247 (1955), 529--551.
+\bibitem{ref2} J. Clerk Maxwell. 1892. \textit{A Treatise on Electricity and Magnetism} (3rd ed.). Vol. 2. Clarendon, Oxford.
+\end{thebibliography}
+
+\end{document}

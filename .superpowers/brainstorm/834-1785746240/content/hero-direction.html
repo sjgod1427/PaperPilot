@@ -1,0 +1,70 @@
+<h2>Which hero direction for the new site?</h2>
+<p class="subtitle">The shooting-stars-grid component you pasted has its own look (dark space, cyan glow, generic modern-SaaS feel) that's different from the terminal→paper identity we already designed for the static site. Pick a direction.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a-keep-identity" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="width:100%;height:180px;background:#0c1015;border-radius:8px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;padding:14px;font-family:monospace;font-size:9px;overflow:hidden;">
+        <div style="background:#141b23;border:1px solid #262f3a;border-radius:6px;padding:8px;color:#8b93a3;">
+          <div style="color:#e7e9ed;">early_exit.py</div>
+          <div>notes.md</div>
+          <div style="color:#d9a544;">&gt; running_</div>
+        </div>
+        <div style="color:#d9a544;font-size:14px;">→</div>
+        <div style="background:#f3eee4;border-radius:6px;padding:8px;color:#2b2520;font-family:serif;">
+          <div style="font-weight:600;">Confidence-Gated...</div>
+          <div style="font-size:8px;color:#6b6154;">Related Work [1][2]</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Keep the terminal/paper identity</h3>
+      <p>Carry over exactly what we already built: dark ground, warm paper-cream panel, mono+serif duality. The shooting-stars-grid component isn't used, or only borrowed for small secondary flourishes elsewhere on the page.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b-shooting-stars" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="width:100%;height:180px;background:radial-gradient(circle at 50% 30%,#0b1020,#07090f);border-radius:8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        <div style="position:absolute;inset:0;background-image:linear-gradient(to right,rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.06) 1px,transparent 1px);background-size:22px 22px;"></div>
+        <div style="position:absolute;width:60px;height:1px;background:linear-gradient(90deg,transparent,#67e8f9,transparent);top:40px;left:20px;box-shadow:0 0 8px #22d3ee;"></div>
+        <div style="position:absolute;width:1px;height:50px;background:linear-gradient(180deg,transparent,#67e8f9,transparent);top:20px;right:60px;box-shadow:0 0 8px #22d3ee;"></div>
+        <div style="text-align:center;z-index:1;">
+          <div style="font-family:sans-serif;color:#fff;font-weight:600;font-size:15px;">Write papers that feel alive</div>
+          <div style="margin-top:8px;display:inline-block;background:#fff;color:#000;font-size:9px;padding:5px 12px;border-radius:999px;">Get Started →</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Adopt the shooting-stars-grid look</h3>
+      <p>Use the pasted component's actual aesthetic as the new site's identity: dark starfield, animated grid, cyan glow, pill buttons. Drop the terminal/paper concept in favor of this generic "modern dev-tool SaaS" feel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c-hybrid" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="width:100%;height:180px;background:#07090f;border-radius:8px;position:relative;overflow:hidden;">
+        <div style="position:absolute;inset:0;background-image:linear-gradient(to right,rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.05) 1px,transparent 1px);background-size:20px 20px;opacity:0.6;"></div>
+        <div style="position:absolute;width:70px;height:1px;background:linear-gradient(90deg,transparent,#22d3ee,transparent);top:24px;left:10px;box-shadow:0 0 6px #22d3ee;"></div>
+        <div style="position:relative;z-index:1;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;padding:20px 14px;font-family:monospace;font-size:9px;">
+          <div style="background:rgba(20,27,35,0.85);backdrop-filter:blur(2px);border:1px solid #262f3a;border-radius:6px;padding:8px;color:#8b93a3;">
+            <div style="color:#e7e9ed;">early_exit.py</div>
+            <div style="color:#d9a544;">&gt; running_</div>
+          </div>
+          <div style="color:#d9a544;font-size:14px;">→</div>
+          <div style="background:#f3eee4;border-radius:6px;padding:8px;color:#2b2520;font-family:serif;">
+            <div style="font-weight:600;">Confidence-Gated...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Hybrid: our identity, their ambience</h3>
+      <p>Keep the terminal→paper transformation as the centerpiece (it's the actual pitch — don't lose it), but let the shooting-stars-grid's animated dot-grid and traveling light streaks run as a subtle ambient background behind both panels, unifying the two instead of replacing either.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;">My recommendation is C — the terminal→paper visual is the one thing on this whole site that's actually specific to PaperPilot; B throws that away for a generic look. But take a look and click whichever feels right.</p>

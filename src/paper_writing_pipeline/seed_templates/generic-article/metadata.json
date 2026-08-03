@@ -1,0 +1,10 @@
+{
+  "id": "generic-article",
+  "publisher": "generic",
+  "paper_type": "survey",
+  "format": "single-column",
+  "class_name": "article",
+  "documentclass_invocation": "\\documentclass{article}",
+  "applicable_to": "arXiv-style preprints, surveys, or any venue without a specific required class — a plain fallback.",
+  "notes": "Class is part of the base LaTeX format, always available. No specific citation style enforced. main.tex is a real filled-in illustrative survey paper (compression techniques for on-device language models) rather than placeholder text, deliberately written in survey structure (taxonomy of approaches, comparison table across a whole field) rather than the single-method experimental structure used by the other seed templates, matching this template's survey paper_type. Contains 3 real matplotlib-generated figures: accuracy-vs-compression-ratio and latency-vs-compression-ratio scatter plots in Comparison, plus a grouped bar chart of surveyed-papers-per-year in the Introduction motivating the survey's scope. Generic_Article_Template.pdf is a kept compiled reference render, excluded from get_template_files like all PDFs. Verified to compile cleanly with zero Overfull/Underfull warnings."
+}

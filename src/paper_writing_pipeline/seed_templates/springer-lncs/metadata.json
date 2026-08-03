@@ -1,0 +1,10 @@
+{
+  "id": "springer-lncs",
+  "publisher": "Springer",
+  "paper_type": "conference",
+  "format": "single-column",
+  "class_name": "llncs",
+  "documentclass_invocation": "\\documentclass{llncs}",
+  "applicable_to": "Springer Lecture Notes in Computer Science (LNCS) conference proceedings.",
+  "notes": "Class is auto-fetched by Tectonic at compile time; no bundled class file needed. Citation style: Springer basic (bibtex, numbered). Macros (\\inst{}, \\orcidID{}, \\titlerunning, \\authorrunning, \\keywords inside abstract) were cross-checked against Springer's official author-instructions sample (typeinst.tex, ftp.springer.de LNCS latex2e/instruct). Body is a real filled-in illustrative paper (a priority-aware work-stealing scheduler), not the official sample's meta-instructional prose about how to format a paper. Contains 3 real matplotlib-generated figures: p99-latency and throughput line charts (both vs. background load) in Experiments/Results, plus a priority-floor-over-time trace in Proposed Method illustrating the scheduling mechanism itself. Springer_LNCS_Template.pdf is a kept compiled reference render, excluded from get_template_files like all PDFs. Verified to compile cleanly with zero Overfull/Underfull warnings."
+}

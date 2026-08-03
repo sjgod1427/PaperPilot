@@ -1,0 +1,10 @@
+{
+  "id": "acm-sigconf",
+  "publisher": "ACM",
+  "paper_type": "conference",
+  "format": "two-column",
+  "class_name": "acmart",
+  "documentclass_invocation": "\\documentclass[sigconf]{acmart}",
+  "applicable_to": "ACM conference proceedings using the standard acmart sigconf format.",
+  "notes": "Class is auto-fetched by Tectonic at compile time; no bundled class file needed. Affiliation requires a \\country field (enforced by recent acmart versions). Citation style: ACM reference format. main.tex's front matter was cross-checked against the official sample-sigconf.tex (acmart package, borisveytsman/acmart) to include the copyright/DOI/ISBN/acmConference block, ORCID-tagged multi-author list, and a full multi-concept CCS classification. Body is a real filled-in illustrative paper (an on-device recommendation reranking adapter), not placeholder text. Needed \\usepackage{microtype}, \\emergencystretch=2em, and \\raggedbottom in the preamble to fully resolve Overfull/Underfull warnings caused by the narrow two-column width -- a real example of the kind of fix the structure/vision checker (Task 7) should be able to apply. Contains 3 real matplotlib-generated figures: a Hit@10-vs-history-length line chart and an added-latency bar chart in Experiments, plus a before/after compatibility-score histogram in Proposed Method illustrating the reranking mechanism itself. ACM_Conference_Template.pdf is a kept compiled reference render, excluded from get_template_files like all PDFs. Verified to compile cleanly with zero Overfull/Underfull warnings."
+}

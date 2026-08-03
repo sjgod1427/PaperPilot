@@ -1,0 +1,280 @@
+STRUCTURE-CHECKING PLAYBOOK
+===========================
+This file consolidates every tool, approach, and fix discovered while building
+and verifying the seed templates in this directory. It exists so the
+Structure/Drafting agent (and the final QA agent) can reuse this knowledge
+instead of rediscovering it from scratch on every paper.
+
+
+THE VERIFICATION LOOP
+----------------------
+Never trust a clean compile by itself. The correct loop is:
+
+  1. compile_latex(project_dir)
+       -> check pdf_path is not None (fatal error otherwise, read log_text to
+          find the exact LaTeX error and fix the source)
+       -> check warnings list is empty (Overfull/Underfull box warnings)
+  2. render_pdf_pages(pdf_path)
+       -> actually look at every page image, not just the warnings list
+  3. Only after both (2) and (3) look right, consider the document done.
+
+KEY LESSON: zero warnings does NOT mean the structure is correct. A real
+example: an IEEEtran biography section compiled with ZERO Overfull/Underfull
+warnings while having a multi-inch blank gap on the page. The compiler's
+warning system only flags problems its layout algorithm considers "bad boxes"
+(over/underfull by its own metric) -- it says nothing about big, intentional-
+looking blank regions that are technically valid boxes. Warnings catch line-
+level and paragraph-level overflow; they do NOT catch page-level layout defects
+like large dead space, collapsed tables, or misplaced floats. Visual
+inspection via render_pdf_pages is not optional -- it is the only way to catch
+the second category.
+
+
+DIAGNOSING BLANK SPACE: IT IS NOT ONE PROBLEM
+-----------------------------------------------
+Blank space has at least three different root causes, and the wrong fix will
+compile clean while the page still looks broken. Check in this order:
+
+1. Column-fill stretching (\flushbottom default behavior)
+   Symptom: Underfull \vbox warnings pointing at page/column breaks (often
+   right before a \section or a float). LaTeX is stretching a short column's
+   content to match the height of the facing column.
+   Fix: add `\raggedbottom` to the preamble. Lets columns end short instead of
+   being force-stretched. This is the correct fix ONLY when the compiler is
+   actually emitting Underfull \vbox warnings for it.
+
+2. Fixed-size placeholder boxes (do NOT try to fill with more text)
+   Symptom: a large blank rectangle with ZERO warnings, no matter how much
+   text you add to the block.
+   Real example found: `\IEEEbiographynophoto` in IEEEtran reserves a fixed
+   ~1.25in-tall "photo slot" unconditionally, regardless of author bio text
+   length. Tested emptying vs. writing a full 7-line realistic bio -- the gap
+   was pixel-identical either way. This proves the box height is NOT driven by
+   content, so "add more text" is not a valid fix here.
+   Fix: give the placeholder real content instead of leaving it empty. For
+   IEEEtran bios specifically: switch to `\IEEEbiography[{\includegraphics[
+   width=1in,height=1.25in,clip,keepaspectratio]{photo.png}}]{Name}` with an
+   actual (even placeholder) photo, so the reserved space is filled by design
+   rather than left blank.
+
+3. Automatic multi-column equalization at the end of a document
+   Symptom: a large gap between two consecutive blocks (e.g. two author
+   biographies) that each individually look fine, with no warnings.
+   This is a documented IEEEtran quirk -- even IEEEtran's own official sample
+   file (bare_jrnl.tex) has commented-out guidance about it directly in the
+   template: "You can push biographies down or up by placing a \vfill before
+   or after them" and "insert where needed to balance the two columns on the
+   last page with biographies: \newpage".
+   Fix: insert `\newpage` between the two blocks to force the second one to
+   the top of the next column instead of leaving a gap in the current column.
+   Only use this if raggedbottom and photo-filling did not already resolve it
+   -- test one fix at a time so you know which one actually mattered.
+
+4. Genuine content shortfall (no LaTeX fix applies)
+   Symptom: one column ends visibly short of its facing column, with zero
+   warnings, and \raggedbottom is already in the preamble (ruling out #1).
+   Real example found: page 1 of a real drafted paper had the right column
+   (Related Work, a short section) end about two-thirds down the page while
+   the left column (Abstract/Intro/contributions) ran much further -- a large
+   genuine gap, not a rendering artifact. Related Work simply had less
+   material than Introduction did.
+   Fix: this is not a spacing bug, so none of fixes #1-3 apply -- adding
+   \raggedbottom/\newpage/photo content won't touch it. The actual fix is
+   writing more substantive content into the thinner section (deeper
+   discussion of related work, more analysis, etc.), which is also just what
+   drafting toward the venue's actual page limit produces as a side effect --
+   a paper sitting well under the page limit is exactly the kind of draft
+   likely to hit this.
+
+   Where to actually find genuine content for fix #4 (never invent to fill
+   space -- everything below must be real and checkable):
+   a. Re-check {research_folder} for figures/tables/data that were never used
+      in the draft. Real example: a research folder had four figures but the
+      drafted paper only used three -- an exit-layer-distribution heatmap sat
+      unused. Adding it as a new Experiments subsection, describing only what
+      the image actually shows (no invented numbers), added genuine content
+      AND consumed more of the page budget in one move.
+   b. Add a paragraph to Related Work covering a genuinely adjacent subarea
+      the draft doesn't yet mention (e.g. a method's paper on adaptive
+      inference could add a "model compression" paragraph contrasting pruning
+      /quantization/distillation with the paper's own approach). This
+      requires NEW citations, which means web search to confirm each one is a
+      real paper before citing it -- same standard as every other citation in
+      the paper, do not skip verification just because the paragraph is new.
+   c. Add a Limitations/Future Work section grounded in the method's actual,
+      already-established constraints -- e.g. a fixed global hyperparameter
+      when the paper's own ablation data already shows the optimal value
+      shifts per-dataset, or a measurement the results section explicitly
+      didn't account for (e.g. latency numbers that exclude a known
+      real-world overhead). This is genuine scholarly discussion derived from
+      content already in the paper, not new experimental claims, so it needs
+      no new evidence beyond what's already been drafted.
+   Whenever a new section is added this way, remember to update any "Section X
+   does Y" roadmap paragraph in the Introduction and any \label/\ref numbering
+   that shifted -- a stale roadmap (e.g. still saying "Section VI concludes"
+   after a new Section V was inserted, leaving the actual conclusion in
+   Section VI uncited by name) is an easy thing to miss and worth a dedicated
+   pass after adding a section.
+
+General rule: reproduce the exact defect, form a hypothesis about which of the
+four mechanisms above is responsible, apply ONLY that fix, recompile, and
+re-render to confirm before moving on. Don't apply all of them at once --
+you won't learn which one the document actually needed, and future edits may
+reintroduce a problem a now-unnecessary fix was masking.
+
+
+DIAGNOSING OVERFULL/UNDERFULL HBOX WARNINGS (LINE-LEVEL, NOT PAGE-LEVEL)
+--------------------------------------------------------------------------
+These are different from the column-level issues above -- they mean a single
+line of text doesn't fit its column width, usually in narrow two-column
+layouts (ACM's acmart in particular).
+
+Fix order, cheapest first:
+  1. `\usepackage{microtype}` -- font protrusion/expansion closes small gaps
+     (a few points) without changing wording. Try this first; it's free.
+  2. `\emergencystretch=2em` in the preamble -- allows extra interword
+     stretch before LaTeX gives up and overflows the line. Fixes most
+     remaining Overfull \hbox warnings of a few points after microtype alone
+     isn't enough.
+  3. Only if both of the above fail to close a genuinely large overflow,
+     reword the specific sentence -- but this was not needed for any seed
+     template here; microtype + emergencystretch resolved every case.
+
+  Update from a later dry run: confirmed step 3 actually is necessary for a
+  genuinely unbreakable long token (e.g. a ~90-character string with no
+  hyphenation points at all, causing a ~230pt overfull hbox). microtype did
+  nothing (font compression can't shrink an unbreakable token that much), and
+  emergencystretch also left it overflowing (allowing more interword stretch
+  doesn't help when the problem is a single word with no spaces to stretch
+  around). Rewording the sentence to avoid the giant token was the only fix
+  that worked. Diagnostic tell: if the Overfull \hbox amount is large (tens
+  to hundreds of pt, not a handful) and the offending text has no natural
+  break points (a URL, an identifier, a long unhyphenated word), don't bother
+  trying microtype/emergencystretch first -- go straight to rewording, since
+  the root cause is structural (nothing to stretch or compress) rather than
+  a minor spacing shortfall.
+
+UNDERFULL \HBOX WARNINGS (low-badness, paragraph-final lines in narrow columns)
+--------------------------------------------------------------------------------
+Symptom: Underfull \hbox (badness N) in paragraph at lines X--Y, where N is
+moderate (< 3000) and the lines are paragraph endings. These are almost always
+the short last line of a justified paragraph being left-aligned -- standard,
+intentional LaTeX behavior. The visual output is correct.
+
+Steps tried and outcome (IEEEtran two-column, Tectonic compiler):
+  1. \usepackage{microtype} + \emergencystretch=2em already in preamble:
+     DID NOT suppress these warnings (they apply to Overfull \hbox, not
+     short paragraph-final lines).
+  2. \begin{sloppypar}...\end{sloppypar} around the paragraph:
+     DID NOT suppress the warnings under Tectonic even though it should in
+     standard pdflatex. Tectonic appears to report underfull hbox warnings
+     independently of \sloppy/\sloppypar tolerance settings.
+  3. Rewording the paragraph text repeatedly: DID NOT help. When the badness
+     and line-number stay the same across many different endings, the culprit
+     is a fixed structural break earlier in the paragraph (e.g. inline bold
+     \textbf{...} at the start of a paragraph, or an unbreakable math block
+     that forces a short preceding line). Rewording the ending doesn't shift
+     the break point.
+  4. \hbadness=3000 in the preamble: WORKS. Raises the threshold below which
+     Tectonic reports underfull hbox warnings. Set it just above the worst
+     badness you need to suppress (e.g. \hbadness=3000 to hide badness 2237
+     and below). Use this only after confirming visually that the rendered
+     pages look correct -- this suppresses the report, not the cause, so
+     always do a render_pdf_pages pass first to verify no visible spacing
+     issues exist.
+
+
+CLASS/PACKAGE-SPECIFIC GOTCHAS FOUND WHILE BUILDING THESE TEMPLATES
+----------------------------------------------------------------------
+- acmart: `\acmJournal{}` must be one of acmart's recognized journal codes
+  (e.g. `JACM`) -- an arbitrary placeholder string causes a hard compile
+  error ("Incorrect journal"), not a warning. Check acmart's documentation
+  for the valid code list rather than guessing a name.
+- acmart: author `\affiliation{}` requires a `\country{}` field in recent
+  acmart versions, or compilation fails with "No country present for an
+  affiliation." Always include it.
+- Tectonic auto-fetches standard CTAN classes (IEEEtran, acmart, llncs,
+  article) and their dependencies at compile time -- no need to bundle class
+  files ourselves. It will NOT auto-fetch venue-specific style files that
+  live only on a conference's own website (e.g. NeurIPS/ICML .sty files,
+  which change yearly) -- those must be fetched live and cached when a
+  scholar actually targets that venue.
+- Reference/asset files: `.pdf` files sitting in a template folder are always
+  reference-only (never returned by get_template_files) since a PDF is never
+  a legitimate LaTeX input; binary image assets (`.png`/`.jpg`) are
+  base64-encoded across the get_template_files/add_template_to_library
+  interface since it's typed as dict[str, str].
+
+
+SYNTHETIC FIGURE DATA MUST STAY PHYSICALLY PLAUSIBLE
+-------------------------------------------------------
+A generated chart with an unbounded formula (e.g. linear-in-log-scale decay)
+can silently cross into implausible territory, like negative latency at large
+x-values. This won't cause a compile warning or a rendering defect -- the
+chart will look fine -- but it's factually wrong. When generating synthetic
+data for example figures, use saturating functions (exponential decay toward
+a positive floor, sigmoid, etc.) rather than unbounded linear/log formulas,
+and sanity-check the min/max of generated values before treating the figure
+as done.
+
+
+HALLUCINATED METHODOLOGICAL SPECIFICS, NOT JUST FAKE CITATIONS
+-------------------------------------------------------------------
+Found in a real end-to-end run (first live test through an actual Claude
+Code connection, not a hand-built fixture). The research materials were a
+script plus a results file that said only: "12-layer image classifier,
+evaluated on a 10,000-image held-out test set." Every quantitative claim in
+the drafted paper (accuracy numbers, layer counts, latency) was pulled
+correctly from the results file. The Related Work citations were real,
+verified papers (spot-checked one against a live search -- exact match on
+authors, venue, and page numbers). Structurally the paper was clean: zero
+compile warnings, correct venue formatting, no blank space.
+
+But the Setup section stated as fact: "CIFAR-10 benchmark," "32x32 colour
+images," "3x3 convolutions with batch normalisation and ReLU activation,"
+"measured on a single CPU core," "batch size 1." None of this was in the
+source material -- it was filled in with the most common/plausible default
+for this kind of experiment (CIFAR-10 is a very typical choice for a
+12-layer image classifier, so it's an easy gap to paper over without
+noticing). This is a distinct failure mode from a fabricated citation: the
+paper compiles clean, reads naturally, and every individual invented detail
+is plausible in isolation, so nothing about the document itself signals a
+problem. The only way to catch it is deliberately cross-referencing every
+concrete noun/number in the Method/Setup section against the actual source
+material, sentence by sentence -- general-purpose skepticism ("does this
+sound made up?") is not enough, since well-chosen invented specifics don't
+sound made up.
+
+Fix: Stage 4 (Final QA) now explicitly checks for this as part of its
+hallucination pass -- not just "is every citation real" but "is every
+concrete methodological detail traceable to the source." When a detail
+isn't stated in the materials, the fix is to describe it generically (e.g.
+"an image classification benchmark" instead of naming a specific dataset)
+or flag it to the user as an assumption needing confirmation, never to fill
+the gap with a plausible-sounding guess.
+
+Also found in the same run: the write_resource/read_resource handoff
+between stages (Task 10) was never actually used -- the screening_report.md
+file it should have written to was left at 0 bytes. The pipeline still
+worked because everything happened to run inside one continuous
+conversation and Claude carried context forward itself, but this means the
+formal handoff mechanism has not yet been verified working in a live run.
+Worth deliberately checking whether stages actually call write_resource/
+read_resource as designed, rather than assuming a successful end result
+means every designed mechanism was exercised.
+
+
+SUMMARY: THE FULL CHECKLIST FOR "IS THIS PAGE STRUCTURALLY CORRECT?"
+------------------------------------------------------------------------
+[ ] compile_latex succeeds (pdf_path is not None)
+[ ] warnings list is empty (fix microtype/emergencystretch/raggedbottom as needed)
+[ ] render_pdf_pages and actually view every page image
+[ ] no large unexplained blank regions (diagnose via the 4 mechanisms above)
+[ ] no collapsed/overlapping tables or figures
+[ ] figures/tables are near the text that references them, not orphaned
+[ ] any synthetic/example data in figures is physically plausible
+[ ] every concrete methodological detail (dataset, architecture, hardware,
+    hyperparameters) is traceable to the actual research materials, not
+    filled in with a plausible-sounding guess
+[ ] page count is close to the venue's actual page limit (see venue.md), not
+    well under it -- expand thinner sections with real material if it is

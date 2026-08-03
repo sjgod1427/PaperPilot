@@ -1,0 +1,10 @@
+{
+  "id": "ieee-conference",
+  "publisher": "IEEE",
+  "paper_type": "conference",
+  "format": "two-column",
+  "class_name": "IEEEtran",
+  "documentclass_invocation": "\\documentclass[conference]{IEEEtran}",
+  "applicable_to": "Most IEEE conferences (e.g. ICRA, ICASSP, ICC, GLOBECOM, INDISCON) using the standard IEEEtran conference format.",
+  "notes": "Class is auto-fetched by Tectonic at compile time; no bundled class file needed. Citation style: IEEEtran numeric (bibtex). main.tex is the full official IEEE template text (not a bare skeleton) so it demonstrates real structure: multi-author block, abstract, index terms, subsections, a table, and a full reference list -- verified to compile cleanly with zero Overfull/Underfull warnings. Contains 3 real matplotlib-generated figures (fig1/2/3.png -- a line chart, bar chart, and scatter plot) placed within the existing Figures and Tables discussion, demonstrating multi-figure placement with no overlay/blank-space/collapse issues. IEEE_Conference_Template.pdf is the original reference document for comparison only, not a template asset."
+}

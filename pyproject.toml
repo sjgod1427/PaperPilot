@@ -1,0 +1,31 @@
+[project]
+name = "paper-writing-pipeline"
+version = "0.1.0"
+description = "MCP server that turns research artifacts into a submission-ready paper"
+authors = [
+    { name = "sjgod1427", email = "sambhav.j23@iiits.in" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "mcp>=1.28.1",
+    "pymupdf>=1.28.0",
+    "python-dotenv>=1.1.0",
+    "starlette>=0.48.0",
+    "uvicorn>=0.38.0",
+]
+
+[project.scripts]
+paper-writing-pipeline = "paper_writing_pipeline.server:main"
+paper-writing-pipeline-remote = "paper_writing_pipeline.server:main_remote"
+paperpilot = "paper_writing_pipeline.start:main"
+
+[build-system]
+requires = ["uv_build>=0.11.12,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "matplotlib>=3.11.0",
+    "pytest>=9.1.1",
+    "pyinstaller>=6.16.0",
+]

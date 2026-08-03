@@ -1,0 +1,141 @@
+\documentclass[journal]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+
+\raggedbottom % Lets columns end short instead of being force-stretched, which was
+              % leaving huge blank gaps around the short IEEEbiographynophoto blocks
+
+\begin{document}
+
+\title{A Lightweight Method for Anomaly Detection in Streaming Sensor Data}
+
+\author{First~Author,~\IEEEmembership{Member,~IEEE,}
+        Second~Author,~\IEEEmembership{Senior~Member,~IEEE,}
+        and~Third~Author,~\IEEEmembership{Fellow,~IEEE}
+\thanks{First Author and Second Author are with the Department of Electrical Engineering, University Name, City, Country.}
+\thanks{Third Author is with the Department of Computer Science, University Name, City, Country.}
+\thanks{Manuscript received Month Day, Year; revised Month Day, Year.}}
+
+\markboth{IEEE Transactions on Example Systems, Vol. 1, No. 1, Month Year}%
+{Author \MakeLowercase{\textit{et al.}}: A Lightweight Method for Anomaly Detection in Streaming Sensor Data}
+
+\maketitle
+
+\begin{abstract}
+Detecting anomalies in streaming sensor data is difficult when devices are constrained in memory and compute. We propose a lightweight scoring method that tracks a running estimate of the local data distribution and flags points whose deviation exceeds an adaptive threshold. Unlike window-based approaches that must retain recent history, our method updates a small fixed-size summary in constant time and space per sample. On three public sensor benchmarks, our method matches the detection accuracy of a sliding-window baseline while using an order of magnitude less memory and roughly half the per-sample compute time.
+\end{abstract}
+
+\begin{IEEEkeywords}
+anomaly detection, streaming data, sensor networks, resource-constrained inference.
+\end{IEEEkeywords}
+
+\IEEEpeerreviewmaketitle
+
+\section{Introduction}
+\IEEEPARstart{S}{ensor} deployments in industrial and environmental monitoring settings generate continuous streams of readings that must be checked for anomalies in real time. Many existing detectors buffer a sliding window of recent samples and recompute statistics over that window, which works well when memory is plentiful but is often impractical on the low-power microcontrollers used in field deployments. This paper asks whether a detector that never stores raw history, only a small running summary, can match window-based accuracy while fitting within the memory budget of embedded devices.
+
+Our contribution is threefold: (1) a constant-memory anomaly score derived from an exponentially weighted estimate of the local mean and variance, (2) an adaptive thresholding rule that adjusts to slowly drifting baselines without manual retuning, and (3) an empirical comparison against a sliding-window baseline on three public sensor datasets, showing comparable accuracy at a fraction of the memory and compute cost.
+
+\section{Related Work}
+Statistical approaches to streaming anomaly detection typically fall into two families. Window-based methods maintain a buffer of the $w$ most recent samples and recompute a test statistic, such as a z-score or a density estimate, each time the window slides. These methods are accurate when $w$ is large enough to characterize the local distribution, but memory grows linearly with $w$, and recomputing over the full window each step also grows the per-sample compute cost.
+
+Summary-based methods instead maintain a small set of running statistics that are updated incrementally, avoiding the need to store raw samples. Exponentially weighted moving average (EWMA) control charts are a classical example, and more recent work has extended this idea with adaptive forgetting factors to track non-stationary streams. Our method builds on this line of work, but differs in how the anomaly threshold itself adapts: rather than a fixed multiple of the running standard deviation, we scale the threshold by a running estimate of local volatility, which we show reduces false positives during naturally noisy periods without suppressing true anomalies.
+
+\section{Proposed Method}
+\subsection{Overview}
+At each timestep $t$, the detector receives a scalar reading $x_t$ and maintains two running statistics: an estimate of the local mean $\mu_t$ and an estimate of local volatility $\sigma_t$. A sample is flagged as anomalous if its deviation from $\mu_t$, normalized by $\sigma_t$, exceeds an adaptive threshold $\tau_t$. All three quantities are updated in constant time per sample, so memory and compute do not grow with the length of the stream.
+
+Fig.~\ref{fig:mechanism} illustrates the mechanism on a short synthetic trace: the adaptive threshold tracks the signal's local volatility and rises briefly around genuinely noisy stretches, while a single injected spike is flagged as an anomaly without the threshold itself being thrown off by it.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.8\linewidth]{fig3.png}
+\caption{A synthetic sensor trace with an injected anomaly, showing the running signal, the adaptive threshold, and the flagged point.}
+\label{fig:mechanism}
+\end{figure}
+
+\subsection{Formulation}
+The running mean and volatility are updated with decay rate $\alpha \in (0,1)$:
+\begin{equation}
+\mu_t = \alpha \mu_{t-1} + (1-\alpha) x_t
+\label{eq:mean}
+\end{equation}
+\begin{equation}
+\sigma_t^2 = \alpha \sigma_{t-1}^2 + (1-\alpha)(x_t - \mu_{t-1})^2
+\label{eq:var}
+\end{equation}
+The anomaly score is the normalized deviation
+\begin{equation}
+z_t = \frac{|x_t - \mu_{t-1}|}{\sigma_{t-1} + \epsilon}
+\label{eq:score}
+\end{equation}
+where $\epsilon$ prevents division by zero during warm-up. A sample is flagged when $z_t$ exceeds an adaptive threshold $\tau_t = k \cdot \bar{z}_t$, where $\bar{z}_t$ is a slow-moving average of recent scores and $k$ is a fixed sensitivity constant, allowing $\tau_t$ to rise during genuinely volatile periods and fall during calm ones.
+
+\section{Experiments}
+\subsection{Setup}
+We evaluate on three public sensor datasets covering temperature, vibration, and network traffic readings, each with expert-labeled anomaly regions. We compare against a sliding-window z-score baseline with window size $w=200$, tuned per dataset. Both methods are evaluated on detection F1 score, peak memory usage, and average per-sample processing time on a Cortex-M4 class microcontroller simulator.
+
+\begin{table}[!t]
+\caption{Comparison of Methods}
+\label{tab:results}
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{F1} & \textbf{Memory (KB)} & \textbf{Time ($\mu$s)} \\
+\hline
+Sliding-window baseline & 0.81 & 6.4 & 18.2 \\
+\hline
+Proposed (ours) & 0.79 & 0.6 & 9.7 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.8\linewidth]{fig1.png}
+\caption{Detection F1 score as the anomaly rate in the stream increases, comparing the sliding-window baseline against the proposed constant-memory method.}
+\label{fig:results}
+\end{figure}
+
+\subsection{Results}
+Table~\ref{tab:results} summarizes accuracy and resource usage averaged across the three datasets. The proposed method reaches within two points of F1 score of the sliding-window baseline while using roughly one-tenth the memory and just over half the per-sample processing time. Fig.~\ref{fig:results} shows that the accuracy gap narrows further as the anomaly rate in the stream increases, suggesting the adaptive threshold is particularly effective when anomalies are not rare isolated events.
+
+Fig.~\ref{fig:memory} breaks out the peak memory usage from Table~\ref{tab:results} directly: the sliding-window baseline's memory scales with its window size $w$, while the proposed method's memory footprint is fixed regardless of $w$, which is the main practical advantage for embedded deployment.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.8\linewidth]{fig2.png}
+\caption{Peak memory usage of the sliding-window baseline compared to the proposed constant-memory method.}
+\label{fig:memory}
+\end{figure}
+
+\section{Conclusion}
+We presented a constant-memory anomaly detector for streaming sensor data that adapts its detection threshold to local volatility instead of relying on a fixed multiple of a running standard deviation. Across three public benchmarks, the method matched the accuracy of a much more memory-hungry sliding-window baseline, making it a practical fit for deployment on resource-constrained sensor hardware. Future work includes extending the approach to multivariate sensor streams and studying its behavior under adversarial sensor tampering.
+
+\appendices
+\section{Proof of the Convergence Bound}
+Under the assumption that the underlying stream is stationary with mean $\mu$ and variance $\sigma^2$, the running estimate $\mu_t$ in Eq.~\eqref{eq:mean} converges in expectation to $\mu$ as $t \to \infty$, since $\mathbb{E}[\mu_t] = \alpha^t \mu_0 + (1-\alpha^t)\mu$ and $\alpha^t \to 0$ for $\alpha \in (0,1)$. The same argument applied to Eq.~\eqref{eq:var} shows $\sigma_t^2$ converges to $\sigma^2$ under the same stationarity assumption.
+
+\section*{Acknowledgment}
+The authors would like to thank the anonymous reviewers for their helpful comments.
+
+\begin{thebibliography}{1}
+\bibitem{ref1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' \emph{Phil. Trans. Roy. Soc. London}, vol. A247, pp. 529--551, April 1955.
+\bibitem{ref2} J. Clerk Maxwell, \emph{A Treatise on Electricity and Magnetism}, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp. 68--73.
+\end{thebibliography}
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{photo1.png}}]{First Author}
+received the B.S. and M.S. degrees in electrical engineering from University Name in 2014 and 2016, respectively, and the Ph.D. degree in computer engineering from University Name in 2020. He is currently an Assistant Professor with the Department of Electrical Engineering, University Name, City, Country. His research interests include streaming data analysis, embedded systems, and resource-constrained machine learning.
+\end{IEEEbiography}
+
+\newpage % Forces the second biography to start at the top of the next column
+         % instead of IEEEtran's last-page column-equalization leaving a large
+         % gap in the current column (a documented IEEEtran quirk)
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{photo2.png}}]{Second Author}
+received the B.S. degree in computer engineering from University Name in 2013, and the M.S. and Ph.D. degrees in electrical engineering from University Name in 2015 and 2019, respectively. She is currently a Senior Member of the technical staff with the Department of Electrical Engineering, University Name, City, Country. Her research interests include sensor networks, anomaly detection, and low-power system design.
+\end{IEEEbiography}
+
+\end{document}

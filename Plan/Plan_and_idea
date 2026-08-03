@@ -1,0 +1,55 @@
+# PaperPilot — Original Idea
+
+I want to make an agentic project. Its about Research papers. Its a one stop platform for research scholars. There you can discover undiscovered novel topics to do research on in a specific domain like google scholar, suggest the approach of that research, the tools, novel algos, training, datasets to use for that research etc. Suggest research papers to refer to for the research work (papers must be from IEEE). These were the basic feature.
+
+THE MAIN features: when submitted the research work done, the graphs, the plots and the results generated from that research, when submitted to the agent it would tell if the research is publishable (by looking at the novelty and the extent of research), grade the work out of 10 on specific topics like novelty etc, and suggest the improvements like further research and seed increase etc. Then further if the user wants to write the paper on the research conducted, the user would just submit the research work (files, results, plots, reference papers etc) and select the type of venue we are targeting, and the agent would write a proper paper for it according to the given files and venue (the agent will make sure no blank spaces are there in the paper, consistency of flow, not hallucination, and most importantly it will be humanized).
+
+---
+
+# Project Decomposition
+
+This is too large to build/design as one system. It splits into four distinct pieces. Three are still unspecced; the fourth (Paper-Writing Pipeline) has a full design — see [`paper_writing_pipeline_design.md`](paper_writing_pipeline_design.md).
+
+Shared architectural principle across all four: **no static, pre-built knowledge base and no fixed algorithm/tool catalog.** Agents reason live by searching the web (papers, code, benchmarks, venue guidelines) rather than looking things up in a maintained database. Any caching that happens (e.g. a venue template once found) grows organically as a side effect of use, not as an upfront data-engineering project.
+
+## A. Live Retrieval & Tools Layer (foundational, shared — not a standalone spec)
+
+Not a product on its own. A handful of live-lookup capabilities that B, C, and D call on demand:
+
+- Web search / paper search (e.g. Semantic Scholar, arXiv, IEEE Xplore) for existing literature on a topic.
+- Web search for "what's already been implemented" (code, benchmarks, existing algorithms) so agents can reason about what's novel vs already done, instead of consulting a fixed algorithm catalog.
+- Venue guideline lookup (submission requirements, formatting rules) for a named conference/journal.
+
+Each of these gets built as a tool alongside whichever of B/C/D needs it first, rather than as its own upfront project.
+
+## B. Discovery & Recommendation Agent (not yet designed)
+
+The scholar's first-touch entry point.
+
+- Scholar selects a research domain and problem area.
+- Agent **brainstorms novel/undiscovered topics itself** by researching the web live — reading what's been published and implemented in the domain to find gaps — rather than pulling from a static topic/algorithm catalog.
+- Suggests a research approach: tools, novel algorithms, training methods, datasets — reasoned live from what it finds, not looked up from a fixed list.
+- Recommends relevant IEEE papers to reference.
+
+Depends on the Live Retrieval layer (A). Not yet brainstormed in detail — next sub-project to design.
+
+## C. Evaluation & Grading Agent (not yet designed)
+
+The "is this publishable" checkpoint, sitting between doing the research and writing it up.
+
+- Input: uploaded research results — files, graphs, plots, results, references.
+- Evaluates novelty (by searching live for similar/prior work), research depth, and overall publishability.
+- Grades out of 10 across specific criteria: novelty, rigor, completeness.
+- **Decision — Publishable?**
+  - **No** → suggests concrete improvements (more experiments, seed increase, further research, stronger baselines) and loops the scholar back to "conduct more research."
+  - **Yes** → scholar can proceed to the Paper-Writing Pipeline (D), if they want a paper generated.
+
+Depends on the Live Retrieval layer (A), to check novelty against existing live literature. Not yet brainstormed in detail.
+
+## D. Paper-Writing Pipeline (fully designed)
+
+Given research artifacts (code, plots, results, notes, reference papers) already evaluated as publishable, plus a target venue, produces a submission-shaped LaTeX paper — properly structured, no blank/broken layout, naturally written, internally consistent.
+
+Built as an MCP server; Claude (in Claude Code or Claude Desktop, using the user's own subscription) is the orchestrating agent across four stages — Screening, Structure/Drafting, Humanization, Final QA — with feedback loops routing issues back to the responsible stage.
+
+Full design, architecture, tool list, error handling, and testing strategy: [`paper_writing_pipeline_design.md`](paper_writing_pipeline_design.md).

@@ -1,0 +1,10 @@
+{
+  "id": "acm-journal",
+  "publisher": "ACM",
+  "paper_type": "journal",
+  "format": "single-column",
+  "class_name": "acmart",
+  "documentclass_invocation": "\\documentclass[acmsmall]{acmart}",
+  "applicable_to": "ACM journal publications using the standard acmart acmsmall format.",
+  "notes": "Class is auto-fetched by Tectonic at compile time; no bundled class file needed. Affiliation requires a \\country field (enforced by recent acmart versions). \\acmJournal{} must be one of acmart's recognized journal codes (e.g. JACM) -- not an arbitrary placeholder string, or compilation fails with 'Incorrect journal'. Citation style: ACM reference format. main.tex's front matter was cross-checked against the official sample-acmsmall.tex (acmart package) to include received-date history (\\received/[revised]/[accepted]), a funding \\thanks footnote, and journal volume/number/article metadata. Body is a real filled-in illustrative paper (a caching strategy for approximate nearest neighbor search), not placeholder text. Needed \\raggedbottom to resolve a page-break Underfull vbox warning. Contains 3 real matplotlib-generated figures: a median-latency and a hit-rate line chart (both vs. cache budget) in Experiments/Results, plus a log-log query-frequency-vs-rank plot in the Introduction motivating the skew claim empirically. Latency values were regenerated once after an initial version dipped below zero at large cache budgets (physically impossible) -- fixed with a saturating exponential-decay curve instead of an unbounded log curve. ACM_Journal_Template.pdf is a kept compiled reference render, excluded from get_template_files like all PDFs. Verified to compile cleanly with zero Overfull/Underfull warnings."
+}
