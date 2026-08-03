@@ -62,7 +62,7 @@ export function Hero() {
             Download PaperPilot.exe
           </a>
           <a
-            href="#"
+            href="#connect"
             className="inline-flex items-center rounded-md border border-pp-border bg-transparent px-[22px] py-[13px] font-pp-mono text-sm font-semibold text-pp-ink"
           >
             See how it connects
