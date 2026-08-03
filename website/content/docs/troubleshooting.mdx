@@ -1,0 +1,35 @@
+---
+title: Troubleshooting
+order: 2
+---
+
+# Troubleshooting
+
+## Important things to know
+
+- **Your files never leave your computer.** PaperPilot runs entirely on
+  your machine; the tunnel just lets Claude reach it. Nothing is uploaded
+  anywhere.
+- **PaperPilot must stay running** the whole time you're using it from
+  Claude. Closing the window disconnects it.
+- **The URL changes every time you restart PaperPilot.** If you close and
+  reopen it, you'll need to update the connector with the new URL (remove
+  the old one, add the new one).
+- **Your files are stored on your computer**, in
+  `C:\Users\<you>\.paperpilot\`. This is where the auth token, downloaded
+  helper programs, and a growing library of paper templates live between
+  runs -- safe to leave alone, nothing you need to touch directly.
+
+## Common issues
+
+**Claude says it can't access your files / asks you to upload them instead.**
+The connector's session is probably stale -- remove it from Claude's
+connector settings and add it again with the current URL PaperPilot is
+showing.
+
+**PaperPilot won't start / closes immediately.**
+Try running it from a Command Prompt or PowerShell window instead of
+double-clicking, so you can see any error message:
+```
+.\PaperPilot.exe
+```

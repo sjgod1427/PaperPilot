@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { GITHUB_URL } from "@/lib/constants";
 
 export function Nav() {
@@ -12,7 +13,7 @@ export function Nav() {
       <div className="flex gap-7 font-pp-mono text-xs text-pp-muted">
         <a href="#privacy" className="hover:text-pp-ink">Privacy</a>
         <a href="#connect" className="hover:text-pp-ink">Connect</a>
-        <a href="/docs/setup" className="hover:text-pp-ink">Docs</a>
+        <Link href="/docs/setup" className="hover:text-pp-ink">Docs</Link>
         <a href={GITHUB_URL} className="hover:text-pp-ink">GitHub</a>
       </div>
     </nav>
