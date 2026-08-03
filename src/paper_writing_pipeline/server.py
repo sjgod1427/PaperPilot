@@ -1,6 +1,9 @@
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.prompts.base import Prompt
 from mcp.server.transport_security import TransportSecuritySettings
+from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
+from starlette.routing import Route
 
 from paper_writing_pipeline.bootstrap import run_setup
 from paper_writing_pipeline.project_files import (
@@ -84,6 +87,25 @@ def main() -> None:
     mcp.run()
 
 
+async def _health(request):
+    return JSONResponse({"status": "ok"})
+
+
+def build_remote_app(auth_token: str):
+    """Build the Streamable HTTP app with auth and CORS, without starting a
+    server -- split out from main_remote() so it's testable without spinning
+    up uvicorn."""
+    app = mcp.streamable_http_app()
+    app.router.routes.append(Route("/health", _health, methods=["GET"]))
+    app.add_middleware(BearerTokenMiddleware, expected_token=auth_token)
+    # allow_origins=["*"] is deliberate: /health reveals nothing sensitive
+    # (no auth token, no file contents, no project data), so there is no
+    # security reason to restrict which site can check whether a PaperPilot
+    # instance is reachable.
+    app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"])
+    return app
+
+
 def main_remote() -> None:
     """Run over Streamable HTTP with bearer-token auth, bound to localhost only.
 
@@ -100,10 +122,7 @@ def main_remote() -> None:
     import uvicorn
 
     setup = run_setup()
-
-    app = mcp.streamable_http_app()
-    app.add_middleware(BearerTokenMiddleware, expected_token=setup["auth_token"])
-
+    app = build_remote_app(setup["auth_token"])
     uvicorn.run(app, host="127.0.0.1", port=8000)
 
 
