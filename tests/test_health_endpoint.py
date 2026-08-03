@@ -1,6 +1,5 @@
 from starlette.testclient import TestClient
 
-from paper_writing_pipeline.remote_auth import BearerTokenMiddleware
 from paper_writing_pipeline.server import build_remote_app
 
 

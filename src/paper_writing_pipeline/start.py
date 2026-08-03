@@ -32,11 +32,9 @@ def _print(message: str = "") -> None:
 def _run_server(auth_token: str) -> None:
     import uvicorn
 
-    from paper_writing_pipeline.remote_auth import BearerTokenMiddleware
-    from paper_writing_pipeline.server import mcp
+    from paper_writing_pipeline.server import build_remote_app
 
-    app = mcp.streamable_http_app()
-    app.add_middleware(BearerTokenMiddleware, expected_token=auth_token)
+    app = build_remote_app(auth_token)
     uvicorn.run(app, host="127.0.0.1", port=SERVER_PORT, log_level="warning")
 
 
