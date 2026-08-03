@@ -25,7 +25,7 @@ export function SetupWizard() {
         <div className="flex flex-col gap-3">
           <p className="text-pp-ink">Which do you use?</p>
           <button
-            className="rounded-md border border-pp-border p-3 text-left hover:border-pp-accent"
+            className="rounded-md border border-pp-border p-3 text-left text-pp-ink hover:border-pp-accent"
             onClick={() => {
               setSurface("desktop-web");
               setStep(2);
@@ -34,7 +34,7 @@ export function SetupWizard() {
             Claude Desktop or claude.ai (web)
           </button>
           <button
-            className="rounded-md border border-pp-border p-3 text-left hover:border-pp-accent"
+            className="rounded-md border border-pp-border p-3 text-left text-pp-ink hover:border-pp-accent"
             onClick={() => {
               setSurface("claude-code");
               setStep(2);
